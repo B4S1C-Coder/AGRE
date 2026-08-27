@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/agre-core",
+  "crates/agre-llm",
+  "cli/agre-cli",
+]
+
+[workspace.dependencies]
+serde = "1.0.229"
+serde_json = "1.0.151"
+thiserror = "2.0.20"
+tokio = "1.53.1"
+
