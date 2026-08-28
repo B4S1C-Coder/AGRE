@@ -8,6 +8,7 @@ pub struct LlmClient {
   client: Client,
   endpoint: String,
   model: String,
+  api_key: Option<String>,
 }
 
 #[derive(Debug, Error)]
@@ -29,7 +30,7 @@ pub enum LlmError {
 }
 
 impl LlmClient {
-  pub fn new(base_url: impl Into<String>, model: impl Into<String>) -> Self {
+  pub fn new(base_url: impl Into<String>, model: impl Into<String>, api_key: Option<String>) -> Self {
     let base_url = base_url.into();
 
     Self {
@@ -39,17 +40,24 @@ impl LlmClient {
         base_url.trim_end_matches('/')
       ),
       model: model.into(),
+      api_key,
     }
   }
 
   pub async fn chat(&self, messages: Vec<Message>) -> Result<String, LlmError> {
-    let response = self
+    let mut request = self
       .client
       .post(&self.endpoint)
       .json(&ChatCompletionRequest {
         model: &self.model,
         messages: &messages
-      })
+      });
+
+    if let Some(api_key) = &self.api_key {
+      request = request.bearer_auth(api_key);
+    }
+
+    let response = request
       .send()
       .await
       .map_err(LlmError::Network)?;

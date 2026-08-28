@@ -10,17 +10,19 @@ struct Args {
   prompt: String,
 
   /// OpenAI compatible
-  #[arg(long, default_value = "http://localhost:8080")]
+  #[arg(long, default_value = "http://localhost:8080", env = "AGRE_BASE_URL")]
   base_url: String,
 
-  #[arg(long, default_value = "local-model")]
+  #[arg(long, default_value = "local-model", env = "AGRE_MODEL")]
   model: String,
 }
 
 async fn run() -> Result<()> {
   let args = Args::parse();
 
-  let client = LlmClient::new(args.base_url, args.model);
+  let api_key = std::env::var("AGRE_LLM_PROVIDER_API_KEY").ok();
+
+  let client = LlmClient::new(args.base_url, args.model, api_key);
 
   let messages = vec![Message{
     role: Role::User,
@@ -41,6 +43,8 @@ async fn run() -> Result<()> {
 
 #[tokio::main]
 async fn main() {
+  dotenvy::dotenv().ok();
+
   if let Err(error) = run().await {
     eprintln!("error: {error:#}");
     std::process::exit(1);
