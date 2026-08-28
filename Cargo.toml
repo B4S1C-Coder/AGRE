@@ -3,7 +3,7 @@ resolver = "2"
 members = [
   "crates/agre-core",
   "crates/agre-llm",
-  "cli/agre-cli",
+  "cli/agre-cli", "crates/agre-runtime", "crates/agre-tools",
 ]
 
 [workspace.dependencies]
@@ -11,4 +11,6 @@ serde = "1.0.229"
 serde_json = "1.0.151"
 thiserror = "2.0.20"
 tokio = "1.53.1"
+async-trait = "0.1.92"
+reqwest = "0.13.4"
 

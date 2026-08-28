@@ -8,6 +8,8 @@ version = "0.1.0"
 dependencies = [
  "agre-core",
  "agre-llm",
+ "agre-runtime",
+ "agre-tools",
  "anyhow",
  "clap",
  "dotenvy",
@@ -34,6 +36,28 @@ dependencies = [
  "thiserror",
  "tokio",
  "wiremock",
+]
+
+[[package]]
+name = "agre-runtime"
+version = "0.1.0"
+dependencies = [
+ "agre-core",
+ "agre-llm",
+ "agre-tools",
+ "async-trait",
+ "thiserror",
+]
+
+[[package]]
+name = "agre-tools"
+version = "0.1.0"
+dependencies = [
+ "agre-core",
+ "async-trait",
+ "reqwest",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -109,6 +133,17 @@ checksum = "47e4f2b81832e72834d7518d8487a0396a28cc408186a2e8854c0f98011faf12"
 dependencies = [
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "async-trait"
+version = "0.1.92"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82f6aeea286b8eb4dd3431a1be1b59d290ace00f5bfd8e2a159bc2a05e2c1667"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.4",
 ]
 
 [[package]]

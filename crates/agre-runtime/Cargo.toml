@@ -1,0 +1,11 @@
+[package]
+name = "agre-runtime"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+agre-core = { version = "0.1.0", path = "../agre-core" }
+agre-llm = { version = "0.1.0", path = "../agre-llm" }
+agre-tools = { version = "0.1.0", path = "../agre-tools" }
+async-trait = { workspace = true }
+thiserror.workspace = true
