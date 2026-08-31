@@ -1,3 +1,4 @@
+use agre_core::{ParameterSchema, ToolSchema};
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
@@ -25,18 +26,18 @@ impl Tool for HttpFetch {
     "http_fetch"
   }
 
-  fn schema(&self) -> Value {
-    json!({
-      "type": "object",
-      "properties": {
-        "url": {
-          "type": "string",
-          "description": "URL to fetch using HTTP GET"
-        }
-      },
-      "required": ["url"],
-      "additionalProperties": false
-    })
+  fn description(&self) -> &str {
+    "Fetch the contents of a URL using an HTTP GET request."
+  }
+
+  fn schema(&self) -> ToolSchema {
+    ToolSchema::object(
+      vec![(
+        "url",
+        ParameterSchema::string("The URL to fetch using HTTP GET."),
+      )],
+      &["url"]
+    )
   }
 
   async fn call(&self, args: Value) -> Result<Value, ToolError> {

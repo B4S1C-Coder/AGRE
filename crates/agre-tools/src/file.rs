@@ -1,5 +1,7 @@
 use std::path::PathBuf;
-
+use agre_core::{ParameterSchema, ToolSchema};
+use async_trait::async_trait;
+use serde_json::{Value, json};
 use crate::{Tool, ToolError};
 
 pub struct FileTool {
@@ -34,5 +36,97 @@ impl FileTool {
     }
 
     Ok(resolved)
+  }
+}
+
+#[async_trait]
+impl Tool for FileTool {
+  fn name(&self) -> &str {
+    "file"
+  }
+
+  fn description(&self) -> &str {
+    "Read or write a text file inside the configured working directory."
+  }
+
+  fn schema(&self) -> ToolSchema {
+    ToolSchema::object(
+      vec![
+        (
+          "operation",
+          ParameterSchema::string_enum(
+            "Whether to read or write the file.",
+            &["read", "write"],
+          ),
+        ),
+        (
+          "path",
+          ParameterSchema::string(
+            "Path relative to the working directory.",
+          ),
+        ),
+        (
+          "content",
+          ParameterSchema::string(
+            "Text to write. Required when operation is write.",
+          ),
+        ),
+      ],
+      &["operation", "path"],
+    )
+  }
+
+  async fn call(&self, args: Value) -> Result<Value, ToolError> {
+    let operation = args
+      .get("operation")
+      .and_then(Value::as_str)
+      .ok_or_else(|| {
+        ToolError::InvalidArguments(
+          "expected string field 'operation'".into(),
+        )
+      })?;
+    
+    let path = args
+      .get("path")
+      .and_then(Value::as_str)
+      .ok_or_else(|| {
+        ToolError::InvalidArguments(
+          "expected string field 'path'".into(),
+        )
+      })?;
+
+    let resolved = self.resolve_path(path)?;
+
+    match operation {
+      "read" => {
+        let content = std::fs::read_to_string(&resolved)?;
+
+        Ok(json!({
+          "content": content
+        }))
+      }
+
+      "write" => {
+        let content = args
+          .get("content")
+          .and_then(Value::as_str)
+          .ok_or_else(|| {
+            ToolError::InvalidArguments(
+              "field 'content' is required for 'write'".into(),
+            )
+          })?;
+        
+        std::fs::write(&resolved, content)?;
+
+        Ok(json!({
+          "written": true,
+          "path": path
+        }))
+      }
+
+      other => Err(ToolError::InvalidArguments(format!(
+        "unsupported operation '{other}', expected 'read' or 'write'"
+      ))),
+    }
   }
 }

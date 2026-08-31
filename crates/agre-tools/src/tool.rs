@@ -1,3 +1,4 @@
+use agre_core::ToolSchema;
 use async_trait::async_trait;
 use serde_json::Value;
 
@@ -13,7 +14,9 @@ use crate::ToolError;
 pub trait Tool: Send + Sync {
   fn name(&self) -> &str;
 
-  fn schema(&self) -> Value;
+  fn description(&self) -> &str;
+
+  fn schema(&self) -> ToolSchema;
 
   async fn call(&self, args: Value) -> Result<Value, ToolError>;
 }

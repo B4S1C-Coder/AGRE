@@ -1,3 +1,4 @@
+use agre_core::{ParameterSchema, ToolSchema};
 use async_trait::async_trait;
 use serde_json::Value;
 use crate::{Tool, ToolError};
@@ -10,18 +11,20 @@ impl Tool for Calculator {
     "calculator"
   }
 
-  fn schema(&self) -> Value {
-    serde_json::json!({
-      "type": "object",
-      "properties": {
-        "expression": {
-          "type": "string",
-          "description": "Arithmetic expression to evaluate"
-        }
-      },
-      "required": ["expression"],
-      "additionalProperties": false
-    })
+  fn description(&self) -> &str {
+    "Evaluate a basic arithmetic expression."
+  }
+
+  fn schema(&self) -> ToolSchema {
+    ToolSchema::object(
+      vec![(
+        "expression",
+        ParameterSchema::string(
+          "Arithmetic expression using numbers, +, -, *, /, % and parantheses ().",
+        ),
+      )],
+      &["expression"],
+    )
   }
 
   async fn call(&self, args: Value) -> Result<Value, ToolError> {
@@ -34,6 +37,12 @@ impl Tool for Calculator {
     
     let result = evaluate(expression)
       .map_err(ToolError::Execution)?;
+
+    if !result.is_finite() {
+      return Err(ToolError::Execution(
+        "calculation produced a non-finite result".into(),
+      ));
+    }
 
     Ok(serde_json::json!({
       "result": result
