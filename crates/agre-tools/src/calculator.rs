@@ -1,7 +1,7 @@
+use crate::{Tool, ToolError};
 use agre_core::{ParameterSchema, ToolSchema};
 use async_trait::async_trait;
 use serde_json::Value;
-use crate::{Tool, ToolError};
 
 pub struct Calculator;
 
@@ -31,12 +31,9 @@ impl Tool for Calculator {
     let expression = args
       .get("expression")
       .and_then(Value::as_str)
-      .ok_or_else(|| {
-        ToolError::InvalidArguments("expected string field 'expression'".into())
-      })?;
-    
-    let result = evaluate(expression)
-      .map_err(ToolError::Execution)?;
+      .ok_or_else(|| ToolError::InvalidArguments("expected string field 'expression'".into()))?;
+
+    let result = evaluate(expression).map_err(ToolError::Execution)?;
 
     if !result.is_finite() {
       return Err(ToolError::Execution(
@@ -50,7 +47,6 @@ impl Tool for Calculator {
   }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 enum Token {
   Number(f64),
@@ -63,7 +59,7 @@ enum Token {
   RParen,
 }
 
-fn tokenize(input: &str) -> Result<Vec<Token>, String>  {
+fn tokenize(input: &str) -> Result<Vec<Token>, String> {
   let chars: Vec<char> = input.chars().collect();
   let mut tokens = Vec::<Token>::new();
   let mut i = 0;
@@ -168,17 +164,11 @@ impl Expr {
     match self {
       Expr::Number(n) => Ok(*n),
 
-      Expr::Add(a, b) => {
-        Ok(a.evaluate()? + b.evaluate()?)
-      }
+      Expr::Add(a, b) => Ok(a.evaluate()? + b.evaluate()?),
 
-      Expr::Sub(a, b) => {
-        Ok(a.evaluate()? - b.evaluate()?)
-      }
+      Expr::Sub(a, b) => Ok(a.evaluate()? - b.evaluate()?),
 
-      Expr::Mul(a, b) => {
-        Ok(a.evaluate()? * b.evaluate()?)
-      }
+      Expr::Mul(a, b) => Ok(a.evaluate()? * b.evaluate()?),
 
       Expr::Div(a, b) => {
         let divisor = b.evaluate()?;
@@ -200,13 +190,9 @@ impl Expr {
         Ok(a.evaluate()? % divisor)
       }
 
-      Expr::Neg(expr) => {
-        Ok(-expr.evaluate()?)
-      }
+      Expr::Neg(expr) => Ok(-expr.evaluate()?),
 
-      Expr::Pos(expr) => {
-        Ok(expr.evaluate()?)
-      }
+      Expr::Pos(expr) => Ok(expr.evaluate()?),
     }
   }
 }
@@ -218,10 +204,7 @@ struct Parser {
 
 impl Parser {
   fn new(tokens: Vec<Token>) -> Self {
-    Self {
-      tokens,
-      pos: 0,
-    }
+    Self { tokens, pos: 0 }
   }
 
   fn peek(&self) -> Option<&Token> {
@@ -248,10 +231,7 @@ impl Parser {
 
           let right = self.parse_term()?;
 
-          left = Expr::Add(
-            Box::new(left),
-            Box::new(right),
-          );
+          left = Expr::Add(Box::new(left), Box::new(right));
         }
 
         Some(Token::Minus) => {
@@ -259,10 +239,7 @@ impl Parser {
 
           let right = self.parse_term()?;
 
-          left = Expr::Sub(
-            Box::new(left),
-            Box::new(right),
-          );
+          left = Expr::Sub(Box::new(left), Box::new(right));
         }
 
         _ => break,
@@ -282,10 +259,7 @@ impl Parser {
 
           let right = self.parse_unary()?;
 
-          left = Expr::Mul(
-            Box::new(left),
-            Box::new(right)
-          );
+          left = Expr::Mul(Box::new(left), Box::new(right));
         }
 
         Some(Token::Slash) => {
@@ -293,10 +267,7 @@ impl Parser {
 
           let right = self.parse_unary()?;
 
-          left = Expr::Div(
-            Box::new(left),
-            Box::new(right)
-          );
+          left = Expr::Div(Box::new(left), Box::new(right));
         }
 
         Some(Token::Percent) => {
@@ -304,10 +275,7 @@ impl Parser {
 
           let right = self.parse_unary()?;
 
-          left = Expr::Mod(
-            Box::new(left),
-            Box::new(right)
-          );
+          left = Expr::Mod(Box::new(left), Box::new(right));
         }
 
         _ => break,
@@ -341,9 +309,7 @@ impl Parser {
 
   fn parse_primary(&mut self) -> Result<Expr, String> {
     match self.advance() {
-      Some(Token::Number(n)) => {
-        Ok(Expr::Number(n))
-      }
+      Some(Token::Number(n)) => Ok(Expr::Number(n)),
 
       Some(Token::LParen) => {
         let expr = self.parse_expression()?;
@@ -354,13 +320,9 @@ impl Parser {
         }
       }
 
-      Some(token) => {
-        Err(format!("unexpected token: {:?}", token))
-      }
+      Some(token) => Err(format!("unexpected token: {:?}", token)),
 
-      None => {
-        Err("unexpected end of expression".into())
-      }
+      None => Err("unexpected end of expression".into()),
     }
   }
 }

@@ -1,7 +1,7 @@
-use std::path::PathBuf;
-use async_trait::async_trait;
 use agre_core::{ParameterSchema, ToolSchema};
-use serde_json::{json, Value};
+use async_trait::async_trait;
+use serde_json::{Value, json};
+use std::path::PathBuf;
 
 use crate::{Tool, ToolError};
 
@@ -28,7 +28,9 @@ impl DeleteFileTool {
       let parent = std::fs::canonicalize(parent)?;
 
       parent.join(
-        candidate.file_name().ok_or(ToolError::PathOutsideWorkingDirectory)?,
+        candidate
+          .file_name()
+          .ok_or(ToolError::PathOutsideWorkingDirectory)?,
       )
     };
 
@@ -64,14 +66,12 @@ impl Tool for DeleteFileTool {
     let path = args
       .get("path")
       .and_then(Value::as_str)
-      .ok_or_else(|| {
-        ToolError::InvalidArguments("expected string field 'path'".into())
-      })?;
-    
+      .ok_or_else(|| ToolError::InvalidArguments("expected string field 'path'".into()))?;
+
     let resolved = self.resolve_path(path)?;
 
     std::fs::remove_file(&resolved)?;
-    
+
     Ok(json!({
       "deleted": true,
       "path": path

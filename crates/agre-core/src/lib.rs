@@ -1,19 +1,14 @@
-mod role;
 mod message;
+mod role;
 mod tool_call;
 mod tool_definition;
 mod tool_result;
 
-pub use role::Role;
 pub use message::Message;
+pub use role::Role;
 pub use tool_call::ToolCall;
 pub use tool_definition::{
-  ToolDefinition,
-  ToolSchema,
-  ToolType,
-  SchemaType,
-  ParameterSchema,
-  FunctionDefinition,
+  FunctionDefinition, ParameterSchema, SchemaType, ToolDefinition, ToolSchema, ToolType,
 };
 pub use tool_result::ToolResult;
 

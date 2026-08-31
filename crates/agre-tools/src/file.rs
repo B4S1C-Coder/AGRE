@@ -1,8 +1,8 @@
-use std::path::PathBuf;
+use crate::{Tool, ToolError};
 use agre_core::{ParameterSchema, ToolSchema};
 use async_trait::async_trait;
 use serde_json::{Value, json};
-use crate::{Tool, ToolError};
+use std::path::PathBuf;
 
 pub struct FileTool {
   working_directory: PathBuf,
@@ -20,14 +20,16 @@ impl FileTool {
     let resolved = if candidate.exists() {
       std::fs::canonicalize(candidate)?
     } else {
-      let parent  = candidate
+      let parent = candidate
         .parent()
         .ok_or(ToolError::PathOutsideWorkingDirectory)?;
 
       let parent = std::fs::canonicalize(parent)?;
 
       parent.join(
-        candidate.file_name().ok_or(ToolError::PathOutsideWorkingDirectory)?
+        candidate
+          .file_name()
+          .ok_or(ToolError::PathOutsideWorkingDirectory)?,
       )
     };
 
@@ -54,22 +56,15 @@ impl Tool for FileTool {
       vec![
         (
           "operation",
-          ParameterSchema::string_enum(
-            "Whether to read or write the file.",
-            &["read", "write"],
-          ),
+          ParameterSchema::string_enum("Whether to read or write the file.", &["read", "write"]),
         ),
         (
           "path",
-          ParameterSchema::string(
-            "Path relative to the working directory.",
-          ),
+          ParameterSchema::string("Path relative to the working directory."),
         ),
         (
           "content",
-          ParameterSchema::string(
-            "Text to write. Required when operation is write.",
-          ),
+          ParameterSchema::string("Text to write. Required when operation is write."),
         ),
       ],
       &["operation", "path"],
@@ -80,20 +75,12 @@ impl Tool for FileTool {
     let operation = args
       .get("operation")
       .and_then(Value::as_str)
-      .ok_or_else(|| {
-        ToolError::InvalidArguments(
-          "expected string field 'operation'".into(),
-        )
-      })?;
-    
+      .ok_or_else(|| ToolError::InvalidArguments("expected string field 'operation'".into()))?;
+
     let path = args
       .get("path")
       .and_then(Value::as_str)
-      .ok_or_else(|| {
-        ToolError::InvalidArguments(
-          "expected string field 'path'".into(),
-        )
-      })?;
+      .ok_or_else(|| ToolError::InvalidArguments("expected string field 'path'".into()))?;
 
     let resolved = self.resolve_path(path)?;
 
@@ -107,15 +94,10 @@ impl Tool for FileTool {
       }
 
       "write" => {
-        let content = args
-          .get("content")
-          .and_then(Value::as_str)
-          .ok_or_else(|| {
-            ToolError::InvalidArguments(
-              "field 'content' is required for 'write'".into(),
-            )
-          })?;
-        
+        let content = args.get("content").and_then(Value::as_str).ok_or_else(|| {
+          ToolError::InvalidArguments("field 'content' is required for 'write'".into())
+        })?;
+
         std::fs::write(&resolved, content)?;
 
         Ok(json!({

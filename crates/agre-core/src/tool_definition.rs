@@ -9,7 +9,11 @@ pub struct ToolDefinition {
 }
 
 impl ToolDefinition {
-  pub fn function(name: impl Into<String>, description: impl Into<String>, parameters: ToolSchema) -> Self {
+  pub fn function(
+    name: impl Into<String>,
+    description: impl Into<String>,
+    parameters: ToolSchema,
+  ) -> Self {
     Self {
       tool_type: ToolType::Function,
       function: FunctionDefinition {
@@ -87,14 +91,9 @@ impl ParameterSchema {
     Self {
       schema_type: SchemaType::String,
       description: description.into(),
-      enum_values: Some(
-        values
-          .iter()
-          .map(|value| (*value).to_string())
-          .collect(),
-      ),
+      enum_values: Some(values.iter().map(|value| (*value).to_string()).collect()),
     }
-  } 
+  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

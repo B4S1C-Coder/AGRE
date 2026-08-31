@@ -1,6 +1,6 @@
 use agre_core::{ParameterSchema, ToolSchema};
 use async_trait::async_trait;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::{Tool, ToolError};
 
@@ -10,13 +10,15 @@ pub struct HttpFetch {
 
 impl HttpFetch {
   pub fn new() -> Self {
-    Self { client: reqwest::Client::new() }
+    Self {
+      client: reqwest::Client::new(),
+    }
   }
 }
 
 impl Default for HttpFetch {
   fn default() -> Self {
-      Self::new()
+    Self::new()
   }
 }
 
@@ -36,7 +38,7 @@ impl Tool for HttpFetch {
         "url",
         ParameterSchema::string("The URL to fetch using HTTP GET."),
       )],
-      &["url"]
+      &["url"],
     )
   }
 
@@ -44,18 +46,12 @@ impl Tool for HttpFetch {
     let url = args
       .get("url")
       .and_then(Value::as_str)
-      .ok_or_else(|| {
-        ToolError::InvalidArguments("expected string field 'url'".into())
-      })?;
-    
-    let response = self.client
-      .get(url)
-      .send()
-      .await?
-      .error_for_status()?;
+      .ok_or_else(|| ToolError::InvalidArguments("expected string field 'url'".into()))?;
+
+    let response = self.client.get(url).send().await?.error_for_status()?;
 
     let status = response.status().as_u16();
-    let body  = response.text().await?;
+    let body = response.text().await?;
 
     Ok(json!({
       "status": status,

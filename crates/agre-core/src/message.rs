@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
 use crate::Role;
 use crate::ToolCall;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Message {

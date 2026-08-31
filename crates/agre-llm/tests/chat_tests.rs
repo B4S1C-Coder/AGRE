@@ -9,7 +9,7 @@ fn user_messages(content: &str) -> Vec<Message> {
     role: Role::User,
     content: content.to_string(),
     tool_calls: Vec::new(),
-    tool_call_id: None
+    tool_call_id: None,
   }]
 }
 
@@ -123,5 +123,5 @@ async fn api_key_is_not_present() {
   let client = LlmClient::new(server.uri(), "test-local-model", None);
   let result = client.chat(user_messages("hello")).await;
 
-  assert_eq!(result.unwrap(), "ok");   
+  assert_eq!(result.unwrap(), "ok");
 }

@@ -1,7 +1,7 @@
+use crate::chat::{ChatCompletionRequest, ChatCompletionResponse};
 use agre_core::Message;
 use reqwest::Client;
 use thiserror::Error;
-use crate::chat::{ChatCompletionRequest, ChatCompletionResponse};
 
 #[derive(Debug)]
 pub struct LlmClient {
@@ -30,15 +30,16 @@ pub enum LlmError {
 }
 
 impl LlmClient {
-  pub fn new(base_url: impl Into<String>, model: impl Into<String>, api_key: Option<String>) -> Self {
+  pub fn new(
+    base_url: impl Into<String>,
+    model: impl Into<String>,
+    api_key: Option<String>,
+  ) -> Self {
     let base_url = base_url.into();
 
     Self {
       client: Client::new(),
-      endpoint: format!(
-        "{}/v1/chat/completions",
-        base_url.trim_end_matches('/')
-      ),
+      endpoint: format!("{}/v1/chat/completions", base_url.trim_end_matches('/')),
       model: model.into(),
       api_key,
     }
@@ -50,17 +51,14 @@ impl LlmClient {
       .post(&self.endpoint)
       .json(&ChatCompletionRequest {
         model: &self.model,
-        messages: &messages
+        messages: &messages,
       });
 
     if let Some(api_key) = &self.api_key {
       request = request.bearer_auth(api_key);
     }
 
-    let response = request
-      .send()
-      .await
-      .map_err(LlmError::Network)?;
+    let response = request.send().await.map_err(LlmError::Network)?;
 
     let status = response.status();
 
@@ -72,25 +70,18 @@ impl LlmClient {
 
     let body = response.text().await.map_err(LlmError::Network)?;
 
-    let completion: ChatCompletionResponse = serde_json::from_str(&body).map_err(LlmError::InvalidJson)?;
+    let completion: ChatCompletionResponse =
+      serde_json::from_str(&body).map_err(LlmError::InvalidJson)?;
 
     let choice = completion
       .choices
       .into_iter()
       .next()
-      .ok_or_else(|| {
-        LlmError::UnexpectedResponse(
-          "response contained no choices".to_string()
-        )
-      })?;
-    
+      .ok_or_else(|| LlmError::UnexpectedResponse("response contained no choices".to_string()))?;
+
     choice
       .message
       .content
-      .ok_or_else(|| {
-        LlmError::UnexpectedResponse(
-          "message contained no content".to_string()
-        )
-      })
+      .ok_or_else(|| LlmError::UnexpectedResponse("message contained no content".to_string()))
   }
 }

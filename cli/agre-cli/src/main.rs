@@ -24,17 +24,14 @@ async fn run() -> Result<()> {
 
   let client = LlmClient::new(args.base_url, args.model, api_key);
 
-  let messages = vec![Message{
+  let messages = vec![Message {
     role: Role::User,
     content: args.prompt,
     tool_calls: Vec::new(),
     tool_call_id: None,
   }];
 
-  let response = client
-    .chat(messages)
-    .await
-    .context("LLM request failed")?;
+  let response = client.chat(messages).await.context("LLM request failed")?;
 
   println!("{response}");
 

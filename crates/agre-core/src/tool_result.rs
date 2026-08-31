@@ -13,7 +13,8 @@ impl ToolResult {
       Ok(value) => value.to_string(),
       Err(error) => serde_json::json!({
         "error": error
-      }).to_string(),
+      })
+      .to_string(),
     };
 
     Message {
