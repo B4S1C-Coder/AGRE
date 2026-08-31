@@ -1,10 +1,21 @@
 mod role;
 mod message;
 mod tool_call;
+mod tool_definition;
+mod tool_result;
 
 pub use role::Role;
 pub use message::Message;
 pub use tool_call::ToolCall;
+pub use tool_definition::{
+  ToolDefinition,
+  ToolSchema,
+  ToolType,
+  SchemaType,
+  ParameterSchema,
+  FunctionDefinition,
+};
+pub use tool_result::ToolResult;
 
 /*
 | Trait         | What it gives you                                                            | Example                                 |
@@ -15,4 +26,19 @@ pub use tool_call::ToolCall;
 | `Deserialize` | Converts JSON/etc. → Rust value                                              | `serde_json::from_str::<Message>(json)` |
 | `PartialEq`   | Allows equality comparison with `==` / `!=`                                  | `a == b`                                |
 | `Eq`          | Says equality is a proper equivalence relation; stronger form of `PartialEq` | Used by things like some collections    |
+*/
+
+/*
+LLM response
+    |
+    | arguments = "{\"expression\":\"2 + 2\"}"
+    v
+ToolCall.arguments: String
+    |
+    v
+runtime parses it
+    |
+    +---- valid JSON ----> tool
+    |
+    +---- invalid JSON --> repair observation
 */

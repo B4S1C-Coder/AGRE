@@ -4,5 +4,5 @@ use serde::{Deserialize, Serialize};
 pub struct ToolCall {
   pub id: String,
   pub name: String,
-  pub arguments: serde_json::Value,
+  pub arguments: String,
 }
