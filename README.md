@@ -5,4 +5,4 @@ This is the _"boring layer"_ that sits between the LLM and the world, which warn
 
 It's boring to update the readme and it shall be updated later (when I feel like it).
 
->**Note:** Impressed by the project? Well you can be impressed more, I'm open for employment opportunities. Contact: `saksham2005mittal@gmail.com`
+>**Note:** Impressed by the project? Well you can be impressed more, I'm open for employment opportunities. Contact: `saksham2005mittal@gmail.com`.
