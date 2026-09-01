@@ -46,6 +46,7 @@ dependencies = [
  "agre-llm",
  "agre-tools",
  "async-trait",
+ "serde_json",
  "thiserror",
 ]
 
