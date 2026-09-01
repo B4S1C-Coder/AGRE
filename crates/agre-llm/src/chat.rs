@@ -54,6 +54,7 @@ pub(crate) struct AssistantToolCall {
   pub(crate) id: String,
 
   #[serde(rename = "type")]
+  #[allow(dead_code)]
   pub(crate) call_type: String,
 
   pub(crate) function: AssistantFunctionCall,

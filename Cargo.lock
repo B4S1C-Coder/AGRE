@@ -17,6 +17,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "agre-cli-v2"
+version = "0.1.0"
+dependencies = [
+ "agre-core",
+ "agre-llm",
+ "agre-runtime",
+ "agre-tools",
+ "anyhow",
+ "clap",
+ "dotenvy",
+ "tokio",
+]
+
+[[package]]
 name = "agre-core"
 version = "0.1.0"
 dependencies = [

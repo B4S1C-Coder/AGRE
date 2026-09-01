@@ -3,7 +3,7 @@ resolver = "2"
 members = [
   "crates/agre-core",
   "crates/agre-llm",
-  "cli/agre-cli", "crates/agre-runtime", "crates/agre-tools",
+  "cli/agre-cli", "crates/agre-runtime", "crates/agre-tools", "cli/agre-cli-v2",
 ]
 
 [workspace.dependencies]
@@ -13,4 +13,7 @@ thiserror = "2.0.20"
 tokio = "1.53.1"
 async-trait = "0.1.92"
 reqwest = "0.13.4"
+anyhow = "1.0.104"
+clap = "4.6.6"
+dotenvy = "0.15.7"
 
