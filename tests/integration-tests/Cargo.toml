@@ -1,0 +1,16 @@
+[package]
+name = "integration-tests"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[dev-dependencies]
+agre-core = { path = "../../crates/agre-core" }
+agre-llm = { path = "../../crates/agre-llm" }
+agre-runtime = { path = "../../crates/agre-runtime" }
+agre-tools = { path = "../../crates/agre-tools" }
+serde_json.workspace = true
+tempfile = "3.27.0"
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+wiremock = { workspace = true }
