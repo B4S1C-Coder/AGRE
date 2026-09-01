@@ -1,5 +1,5 @@
 use crate::chat::{ChatCompletionRequest, ChatCompletionResponse};
-use agre_core::Message;
+use agre_core::{Message, ToolDefinition};
 use reqwest::Client;
 use thiserror::Error;
 
@@ -46,12 +46,31 @@ impl LlmClient {
   }
 
   pub async fn chat(&self, messages: Vec<Message>) -> Result<String, LlmError> {
+    let response = self.chat_with_tools(&messages, &[]).await?;
+
+    if !response.tool_calls.is_empty() {
+      return Err(LlmError::UnexpectedResponse(
+        "response contained tool calls when tools were not supplied".to_string(),
+      ));
+    }
+
+    Ok(response.content)
+  }
+
+  pub async fn chat_with_tools(
+    &self,
+    messages: &[Message],
+    tools: &[ToolDefinition],
+  ) -> Result<Message, LlmError> {
+    let tools = if tools.is_empty() { None } else { Some(tools) };
+
     let mut request = self
       .client
       .post(&self.endpoint)
       .json(&ChatCompletionRequest {
         model: &self.model,
-        messages: &messages,
+        messages,
+        tools,
       });
 
     if let Some(api_key) = &self.api_key {
@@ -64,7 +83,6 @@ impl LlmClient {
 
     if !status.is_success() {
       let body = response.text().await.map_err(LlmError::Network)?;
-
       return Err(LlmError::HttpStatus { status, body });
     }
 
@@ -79,9 +97,14 @@ impl LlmClient {
       .next()
       .ok_or_else(|| LlmError::UnexpectedResponse("response contained no choices".to_string()))?;
 
-    choice
-      .message
-      .content
-      .ok_or_else(|| LlmError::UnexpectedResponse("message contained no content".to_string()))
+    let message = choice.message.into_core_message();
+
+    if message.content.is_empty() && message.tool_calls.is_empty() {
+      return Err(LlmError::UnexpectedResponse(
+        "assistant message contained neither content nor tool calls".to_string(),
+      ));
+    }
+
+    Ok(message)
   }
 }
