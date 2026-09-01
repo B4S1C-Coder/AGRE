@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use agre_core::ToolDefinition;
 use agre_tools::Tool;
+use std::collections::HashMap;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -24,8 +24,8 @@ impl ToolRegistry {
   }
 
   pub fn register<T>(&mut self, tool: T) -> Result<(), RegistryError>
-  where 
-    T: Tool + 'static
+  where
+    T: Tool + 'static,
   {
     let name = tool.name().to_string();
 
@@ -50,14 +50,10 @@ impl ToolRegistry {
     let mut definitions: Vec<ToolDefinition> = self
       .tools
       .values()
-      .map(|tool| {
-        ToolDefinition::function(tool.name(), tool.description(), tool.schema())
-      })
+      .map(|tool| ToolDefinition::function(tool.name(), tool.description(), tool.schema()))
       .collect();
 
-    definitions.sort_by(|left, right| {
-      left.function.name.cmp(&right.function.name)
-    });
+    definitions.sort_by(|left, right| left.function.name.cmp(&right.function.name));
 
     definitions
   }
@@ -65,6 +61,6 @@ impl ToolRegistry {
 
 impl Default for ToolRegistry {
   fn default() -> Self {
-      Self::new()
+    Self::new()
   }
 }

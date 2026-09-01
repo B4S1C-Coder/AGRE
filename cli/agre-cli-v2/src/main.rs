@@ -1,14 +1,9 @@
-use std::path::PathBuf;
 use agre_llm::LlmClient;
 use agre_runtime::{AgentRuntime, ToolRegistry};
-use agre_tools::{
-  Calculator,
-  DeleteFileTool,
-  FileTool,
-  HttpFetch,
-};
+use agre_tools::{Calculator, DeleteFileTool, FileTool, HttpFetch};
 use anyhow::{Context, Result};
 use clap::Parser;
+use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
 #[command(name = "agre-cli-v2")]
@@ -37,13 +32,15 @@ async fn run() -> Result<()> {
 
   let mut registry = ToolRegistry::new();
 
-  registry.register(Calculator).context("failed to register Calculator tool.")?;
-  registry.register(HttpFetch::new()).context("failed to register HttpFetch tool.")?;
-  
   registry
-    .register(
-      FileTool::new(&args.working_directory).context("failed to create file tool")?,
-    )
+    .register(Calculator)
+    .context("failed to register Calculator tool.")?;
+  registry
+    .register(HttpFetch::new())
+    .context("failed to register HttpFetch tool.")?;
+
+  registry
+    .register(FileTool::new(&args.working_directory).context("failed to create file tool")?)
     .context("failed to register file tool.")?;
 
   registry
@@ -51,7 +48,7 @@ async fn run() -> Result<()> {
       DeleteFileTool::new(&args.working_directory).context("failed to create delete-file tool.")?,
     )
     .context("failed to register delete-file tool.")?;
-  
+
   let runtime = AgentRuntime::new(args.max_iterations);
 
   let system_prompt = "\

@@ -48,9 +48,7 @@ impl AgentRuntime {
     let tool_definitions = registry.definitions();
 
     for _ in 0..self.max_iterations {
-      let assistant_message = client
-        .chat_with_tools(&messages, &tool_definitions)
-        .await?;
+      let assistant_message = client.chat_with_tools(&messages, &tool_definitions).await?;
 
       let tool_calls = assistant_message.tool_calls.clone();
 
@@ -61,38 +59,31 @@ impl AgentRuntime {
       }
 
       for tool_call in tool_calls {
-        let tool_result = match serde_json::from_str::<Value>(
-          &tool_call.arguments
-        ) {
-          Ok(arguments) => {
-            match registry.get(&tool_call.name) {
-              Some(tool) => {
-                match tool.call(arguments).await {
-                  Ok(output) => ToolResult {
-                    call_id: tool_call.id.clone(),
-                    output: Ok(output),
-                  },
-
-                  Err(error) => ToolResult {
-                    call_id: tool_call.id.clone(),
-                    output: Err(error.to_string()),
-                  },
-                }
-              }
-
-              None => ToolResult {
+        let tool_result = match serde_json::from_str::<Value>(&tool_call.arguments) {
+          Ok(arguments) => match registry.get(&tool_call.name) {
+            Some(tool) => match tool.call(arguments).await {
+              Ok(output) => ToolResult {
                 call_id: tool_call.id.clone(),
-                output: Err(format!("unkown tool '{}'", tool_call.name)),
+                output: Ok(output),
               },
-            }
-          }
+
+              Err(error) => ToolResult {
+                call_id: tool_call.id.clone(),
+                output: Err(error.to_string()),
+              },
+            },
+
+            None => ToolResult {
+              call_id: tool_call.id.clone(),
+              output: Err(format!("unkown tool '{}'", tool_call.name)),
+            },
+          },
 
           Err(error) => ToolResult {
             call_id: tool_call.id.clone(),
             output: Err(format!(
               "malformed JSON arguments for tool '{}': {}. Please retry the tool call with valid JSON arguments.",
-              tool_call.name,
-              error
+              tool_call.name, error
             )),
           },
         };

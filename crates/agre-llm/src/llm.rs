@@ -64,14 +64,19 @@ impl LlmClient {
   ) -> Result<Message, LlmError> {
     let tools = if tools.is_empty() { None } else { Some(tools) };
 
-    let mut request = self
-      .client
-      .post(&self.endpoint)
-      .json(&ChatCompletionRequest {
-        model: &self.model,
-        messages,
-        tools,
-      });
+    let request_body = ChatCompletionRequest {
+      model: &self.model,
+      messages,
+      tools,
+    };
+
+    // DEBUG
+    println!(
+      "\n===== LLM REQUEST =====\n{}\n=======================\n",
+      serde_json::to_string_pretty(&request_body).expect("request should serialize")
+    );
+
+    let mut request = self.client.post(&self.endpoint).json(&request_body);
 
     if let Some(api_key) = &self.api_key {
       request = request.bearer_auth(api_key);
