@@ -1,0 +1,16 @@
+#!/bin/sh
+
+echo "Running cargo fmt --all -- --check..."
+
+if ! cargo fmt --all -- --check; then
+    echo ""
+    echo "ERROR: Commit rejected because the code is not formatted."
+    echo ""
+    echo "Run:"
+    echo "    cargo fmt --all"
+    echo ""
+    echo "Then commit again."
+    exit 1
+fi
+
+echo "Formatting check passed."
