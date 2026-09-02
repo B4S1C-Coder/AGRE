@@ -75,7 +75,7 @@ impl AgentRuntime {
 
             None => ToolResult {
               call_id: tool_call.id.clone(),
-              output: Err(format!("unkown tool '{}'", tool_call.name)),
+              output: Err(format!("unknown tool '{}'", tool_call.name)),
             },
           },
 

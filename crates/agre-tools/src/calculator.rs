@@ -174,7 +174,7 @@ impl Expr {
         let divisor = b.evaluate()?;
 
         if divisor == 0.0 {
-          return Err("divison by zero".into());
+          return Err("division by zero".into());
         }
 
         Ok(a.evaluate()? / divisor)

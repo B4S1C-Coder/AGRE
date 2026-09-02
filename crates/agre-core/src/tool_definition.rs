@@ -97,6 +97,7 @@ impl ParameterSchema {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
 pub enum SchemaType {
   String,
   Number,
