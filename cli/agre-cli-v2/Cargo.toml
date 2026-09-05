@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+agre-context = { version = "0.1.0", path = "../../crates/agre-context" }
 agre-core = { version = "0.1.0", path = "../../crates/agre-core" }
 agre-llm = { version = "0.1.0", path = "../../crates/agre-llm" }
 agre-runtime = { version = "0.1.0", path = "../../crates/agre-runtime" }

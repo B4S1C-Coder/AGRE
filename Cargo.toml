@@ -3,7 +3,7 @@ resolver = "2"
 members = [
   "crates/agre-core",
   "crates/agre-llm",
-  "cli/agre-cli", "crates/agre-runtime", "crates/agre-tools", "cli/agre-cli-v2", "tests/integration-tests",
+  "cli/agre-cli", "crates/agre-runtime", "crates/agre-tools", "cli/agre-cli-v2", "tests/integration-tests", "crates/agre-context",
 ]
 
 [workspace.dependencies]
