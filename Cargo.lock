@@ -36,6 +36,7 @@ name = "agre-context"
 version = "0.1.0"
 dependencies = [
  "agre-core",
+ "agre-llm",
  "async-trait",
  "rusqlite",
  "serde",

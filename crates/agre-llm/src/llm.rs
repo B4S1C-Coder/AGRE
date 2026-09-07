@@ -3,7 +3,7 @@ use agre_core::{Message, ToolDefinition};
 use reqwest::Client;
 use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LlmClient {
   client: Client,
   endpoint: String,
