@@ -91,28 +91,6 @@ impl MemoryStore {
     )
   }
 
-  fn cosine_similarity(left: &[f32], right: &[f32]) -> Option<f32> {
-    if left.len() != right.len() || left.is_empty() {
-      return None;
-    }
-
-    let mut dot = 0.0;
-    let mut left_norm = 0.0;
-    let mut right_norm = 0.0;
-
-    for (&left_value, &right_value) in left.iter().zip(right.iter()) {
-      dot += left_value * right_value;
-      left_norm += left_value * left_value;
-      right_norm += right_value * right_value;
-    }
-
-    if left_norm == 0.0 || right_norm == 0.0 {
-      return None;
-    }
-
-    Some(dot / (left_norm.sqrt() * right_norm.sqrt()))
-  }
-
   pub fn store_episode(
     &self,
     summary_text: &str,
@@ -189,4 +167,93 @@ impl MemoryStore {
 
     Ok(episodes)
   }
+
+  pub fn search_by_embedding(
+    &self,
+    query: &[f32],
+    limit: usize,
+  ) -> Result<Vec<MemoryMatch>, MemoryStoreError> {
+    if query.is_empty() {
+      return Err(MemoryStoreError::EmptyEmbedding);
+    }
+
+    let connection = self
+      .connection
+      .lock()
+      .expect("memory store mutex should not be poisoned");
+
+    let mut statement = connection.prepare(
+      "\
+      SELECT id, created_at, summary_text, embedding
+      FROM episodes
+      WHERE embedding IS NOT NULL
+      ",
+    )?;
+
+    let rows = statement.query_map([], |row| {
+      Ok((
+        row.get::<_, i64>(0)?,
+        row.get::<_, i64>(1)?,
+        row.get::<_, String>(2)?,
+        row.get::<_, Vec<u8>>(3)?,
+      ))
+    })?;
+
+    let mut matches = Vec::new();
+
+    for row in rows {
+      let (id, created_at, summary_text, bytes) = row?;
+      let embedding = Self::decode_embedding(&bytes)?;
+
+      if embedding.len() != query.len() {
+        continue;
+      }
+
+      if let Some(similarity) = cosine_similarity(query, &embedding) {
+        matches.push(MemoryMatch {
+          episode: Episode {
+            id,
+            created_at,
+            summary_text,
+            embedding: Some(embedding),
+          },
+          similarity,
+        });
+      }
+    }
+
+    // better to introduce a vector db
+    matches.sort_by(|left, right| {
+      right
+        .similarity
+        .partial_cmp(&left.similarity)
+        .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    matches.truncate(limit);
+
+    Ok(matches)
+  }
+}
+
+fn cosine_similarity(left: &[f32], right: &[f32]) -> Option<f32> {
+  if left.len() != right.len() || left.is_empty() {
+    return None;
+  }
+
+  let mut dot = 0.0;
+  let mut left_norm = 0.0;
+  let mut right_norm = 0.0;
+
+  for (&left_value, &right_value) in left.iter().zip(right.iter()) {
+    dot += left_value * right_value;
+    left_norm += left_value * left_value;
+    right_norm += right_value * right_value;
+  }
+
+  if left_norm == 0.0 || right_norm == 0.0 {
+    return None;
+  }
+
+  Some(dot / (left_norm.sqrt() * right_norm.sqrt()))
 }
